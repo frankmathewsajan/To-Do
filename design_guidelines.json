@@ -1,0 +1,147 @@
+{
+  "theme_archetype": {
+    "domain": "Productivity / SaaS / Tools",
+    "theme": "Light / Dark Toggle",
+    "primary_archetype": "Archetype 4 (Swiss & High-Contrast)",
+    "mood": "Focused, efficient, authoritative, clean, and top-notch modern",
+    "justification": "A high-end SaaS productivity app requires clarity and zero distractions. High contrast builds trust and emphasizes the data (todos), while precise typography feels premium."
+  },
+  "typography": {
+    "fonts": {
+      "headings": {
+        "family": "'Outfit', sans-serif",
+        "weights": ["400", "600", "800"],
+        "usage": "Use for all H1-H6 headings. Provides a sleek, geometric, modern look. Never use Inter for headings."
+      },
+      "body": {
+        "family": "'Manrope', sans-serif",
+        "weights": ["400", "500", "600"],
+        "usage": "Use for all body text, inputs, and buttons. High legibility at small sizes."
+      },
+      "mono": {
+        "family": "'JetBrains Mono', monospace",
+        "weights": ["400"],
+        "usage": "Use for MFA codes, OTP inputs, or encrypted hashes/keys."
+      }
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-bold text-foreground",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-semibold text-foreground",
+      "h3": "text-xl sm:text-2xl tracking-tight font-medium text-foreground",
+      "h4": "text-lg sm:text-xl font-medium text-foreground",
+      "body": "text-base text-muted-foreground leading-relaxed",
+      "small": "text-sm text-muted-foreground",
+      "overline": "text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+    }
+  },
+  "colors": {
+    "strategy": "Swiss High-Contrast. Grayscale structural hierarchy with vibrant Electric Blue as the single primary action color. Red for destructive actions.",
+    "css_variables": {
+      "light": {
+        "--background": "0 0% 100%",
+        "--foreground": "0 0% 4%",
+        "--card": "0 0% 98%",
+        "--card-foreground": "0 0% 4%",
+        "--popover": "0 0% 100%",
+        "--popover-foreground": "0 0% 4%",
+        "--primary": "221 100% 50%",
+        "--primary-foreground": "0 0% 100%",
+        "--secondary": "0 0% 96%",
+        "--secondary-foreground": "0 0% 9%",
+        "--muted": "0 0% 96%",
+        "--muted-foreground": "0 0% 45%",
+        "--accent": "0 0% 96%",
+        "--accent-foreground": "0 0% 9%",
+        "--destructive": "0 84% 60%",
+        "--destructive-foreground": "0 0% 100%",
+        "--border": "0 0% 90%",
+        "--input": "0 0% 90%",
+        "--ring": "221 100% 50%",
+        "--radius": "0.5rem"
+      },
+      "dark": {
+        "--background": "0 0% 4%",
+        "--foreground": "0 0% 98%",
+        "--card": "0 0% 7%",
+        "--card-foreground": "0 0% 98%",
+        "--popover": "0 0% 4%",
+        "--popover-foreground": "0 0% 98%",
+        "--primary": "221 100% 58%",
+        "--primary-foreground": "0 0% 100%",
+        "--secondary": "0 0% 11%",
+        "--secondary-foreground": "0 0% 98%",
+        "--muted": "0 0% 11%",
+        "--muted-foreground": "0 0% 64%",
+        "--accent": "0 0% 11%",
+        "--accent-foreground": "0 0% 98%",
+        "--destructive": "0 62% 40%",
+        "--destructive-foreground": "0 0% 100%",
+        "--border": "0 0% 15%",
+        "--input": "0 0% 15%",
+        "--ring": "221 100% 58%"
+      }
+    }
+  },
+  "spacing_and_layout": {
+    "generous_spacing": "Use p-6 or p-8 for cards and modals. Use gap-6 or gap-8 in grids.",
+    "dashboard_grid": "The 'Control Room' Grid: grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-6. Sidebars span 1 col, main content spans 3 cols.",
+    "bento_grid_marketing": "For the landing page: grid-cols-1 md:grid-cols-8 lg:grid-cols-12 with gap-8. Mix tall and wide blocks for tension.",
+    "alignment": "Left-align forms, inputs, and dense lists. Center-align hero text on marketing pages. Use optical alignment for icons + text.",
+    "max_width": "max-w-7xl mx-auto for general wrapper."
+  },
+  "components_strategy": {
+    "libraries": [
+      "lucide-react (Icons)",
+      "framer-motion (Animations)",
+      "date-fns (Dates)",
+      "sonner (Toasts)",
+      "recharts (If analytics are needed)"
+    ],
+    "shadcn_overrides": {
+      "Cards": "Flat solid background, 1px border (border-border), max 8px radius. Hover state: -translate-y-1, shadow-lg, border-primary/20 transition-all duration-300.",
+      "Buttons": "Primary button is Electric Blue. Use fully rounded (rounded-full) for landing page, and rounded-md for the app dashboard.",
+      "Inputs": "bg-background border-input focus:ring-2 focus:ring-primary focus:border-primary",
+      "Modals": "Backdrop blur is required (backdrop-blur-sm bg-black/40). Modal body must have generous padding (p-6).",
+      "Navigation": "Crystal Glass style for sticky nav: backdrop-blur-xl bg-background/70 border-b border-border."
+    },
+    "custom_ui": {
+      "TodoItem": "Use a horizontal flex row. Checkbox on the left, Title/Desc flex-col in middle, tags/actions on right. Group hover to reveal actions (edit/delete).",
+      "PriorityLabels": "High: text-red-500 bg-red-500/10; Med: text-yellow-500 bg-yellow-500/10; Low: text-blue-500 bg-blue-500/10"
+    }
+  },
+  "motion_and_interactions": {
+    "philosophy": "Functional and precise. No bouncy animations. Everything should feel instant but smooth.",
+    "hover_states": "All buttons/links must have explicit hover text/bg colors to maintain contrast.",
+    "todo_complete": "Use framer-motion layout animations. When completing a task, strike-through the text, drop opacity to 50%, and smoothly animate it to the bottom of the list.",
+    "page_transitions": "initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }}"
+  },
+  "image_urls": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1748164685063-bc408b0dc789?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTV8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGdlb21ldHJpYyUyMGNsZWFuJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzcwMDkwOTN8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract shapes with pastel colors, useful for the landing page hero background (needs dark overlay or blur).",
+      "usage": "Landing page background. Apply opacity-20 or use as a blurred blob."
+    },
+    "feature_image": {
+      "url": "https://images.pexels.com/photos/6893893/pexels-photo-6893893.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Person typing on a black laptop at a marble desk.",
+      "usage": "Landing page 'How it works' or 'Features' section to add human element."
+    },
+    "auth_background": {
+      "url": "https://images.pexels.com/photos/3137073/pexels-photo-3137073.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Minimalistic abstract design featuring white geometric lines.",
+      "usage": "Use as a split-screen background for the Auth/Login/Signup page."
+    }
+  },
+  "testing": {
+    "attributes": "All interactive elements (buttons, inputs, checkboxes, modals) MUST have data-testid attributes (e.g., data-testid='create-todo-btn')."
+  },
+  "instructions_to_main_agent": [
+    "Install required fonts (@fontsource/outfit, @fontsource/manrope) or import via Google Fonts in index.css.",
+    "Apply the color palette CSS variables in index.css for light and dark modes.",
+    "Use standard HTML tags for layout (div, section) and Shadcn for interactive components (Dialog, DropdownMenu, Checkbox, Select).",
+    "For the Landing Page, construct a high-impact hero with glassmorphism nav.",
+    "For the Dashboard, use the 'Control Room' grid pattern.",
+    "Never use purely transparent overlays over text/images; always add a blur or tint.",
+    "Implement the framer-motion layout wrapper on the Todo list to smoothly handle complete/delete repositioning."
+  ]
+}
