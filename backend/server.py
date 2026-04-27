@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Header, Response, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -50,6 +50,22 @@ app = FastAPI(title="Modern Todo API")
 api_router = APIRouter(prefix="/api")
 bearer = HTTPBearer(auto_error=False)
 
+AUTH_COOKIE_NAME = "access_token"
+
+def set_auth_cookie(response: Response, token: str):
+    response.set_cookie(
+        key=AUTH_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/",
+    )
+
+def clear_auth_cookie(response: Response):
+    response.delete_cookie(AUTH_COOKIE_NAME, path="/")
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -97,10 +113,18 @@ def aes_decrypt(ciphertext: str) -> str:
         logger.warning(f"Decryption failed: {e}")
         return ""
 
-async def get_current_user(creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer)):
-    if not creds or not creds.credentials:
+async def get_current_user(
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer),
+    access_token: Optional[str] = Cookie(default=None),
+):
+    token = None
+    if creds and creds.credentials:
+        token = creds.credentials
+    elif access_token:
+        token = access_token
+    if not token:
         raise HTTPException(status_code=401, detail="Missing token")
-    payload = decode_jwt(creds.credentials)
+    payload = decode_jwt(token)
     if payload.get("scope") != "access":
         raise HTTPException(status_code=401, detail="Invalid token scope")
     user = await users_col.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
@@ -183,7 +207,7 @@ async def root():
     return {"message": "Modern Todo API", "version": "1.0"}
 
 @api_router.post("/auth/signup")
-async def signup(body: SignupIn):
+async def signup(body: SignupIn, response: Response):
     existing = await users_col.find_one({"email": body.email.lower()})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -199,6 +223,7 @@ async def signup(body: SignupIn):
     }
     await users_col.insert_one(user)
     token = create_jwt({"sub": user_id, "email": user["email"], "scope": "access"})
+    set_auth_cookie(response, token)
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -206,7 +231,7 @@ async def signup(body: SignupIn):
     }
 
 @api_router.post("/auth/login")
-async def login(body: LoginIn):
+async def login(body: LoginIn, response: Response):
     user = await users_col.find_one({"email": body.email.lower()})
     if not user or not user.get("password_hash") or not verify_password(body.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -226,6 +251,7 @@ async def login(body: LoginIn):
         return {"requires_mfa": True, "mfa_token": mfa_token}
 
     token = create_jwt({"sub": user["id"], "email": user["email"], "scope": "access"})
+    set_auth_cookie(response, token)
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -234,7 +260,7 @@ async def login(body: LoginIn):
     }
 
 @api_router.post("/auth/mfa/verify")
-async def verify_mfa(body: MFAVerifyIn):
+async def verify_mfa(body: MFAVerifyIn, response: Response):
     rec = await otps_col.find_one({"mfa_token": body.mfa_token})
     if not rec:
         raise HTTPException(status_code=401, detail="Invalid MFA token")
@@ -251,6 +277,7 @@ async def verify_mfa(body: MFAVerifyIn):
     user = await users_col.find_one({"id": rec["user_id"]})
     await otps_col.delete_one({"mfa_token": body.mfa_token})
     token = create_jwt({"sub": user["id"], "email": user["email"], "scope": "access"})
+    set_auth_cookie(response, token)
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -298,13 +325,18 @@ async def me(user = Depends(get_current_user)):
         "mfa_enabled": user.get("mfa_enabled", False),
     }
 
+@api_router.post("/auth/logout")
+async def logout(response: Response):
+    clear_auth_cookie(response)
+    return {"ok": True}
+
 @api_router.post("/auth/mfa/toggle")
 async def toggle_mfa(body: MFAEnableIn, user = Depends(get_current_user)):
     await users_col.update_one({"id": user["id"]}, {"$set": {"mfa_enabled": body.enabled}})
     return {"mfa_enabled": body.enabled}
 
 @api_router.post("/auth/google/session")
-async def google_session(body: GoogleSessionIn):
+async def google_session(body: GoogleSessionIn, response: Response):
     """Exchange Emergent session_id for auth token."""
     async with httpx.AsyncClient() as http:
         try:
@@ -341,6 +373,7 @@ async def google_session(body: GoogleSessionIn):
         await users_col.update_one({"id": user["id"]}, {"$set": {"google_id": google_id}})
 
     token = create_jwt({"sub": user["id"], "email": user["email"], "scope": "access"})
+    set_auth_cookie(response, token)
     return {
         "access_token": token,
         "token_type": "bearer",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import AppLayout, { useAppCtx } from "../components/AppLayout";
@@ -14,7 +14,7 @@ function Inner() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const { data } = await api.get("/todos");
       setTodos(data);
@@ -23,8 +23,8 @@ function Inner() {
     } finally {
       setLoading(false);
     }
-  };
-  useEffect(() => { load(); }, [todosRefreshKey]);
+  }, []);
+  useEffect(() => { load(); }, [load, todosRefreshKey]);
 
   const stats = useMemo(() => {
     const total = todos.length;

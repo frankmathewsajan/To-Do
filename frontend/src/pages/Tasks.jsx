@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout, { useAppCtx } from "../components/AppLayout";
 import TodoItem from "../components/TodoItem";
@@ -17,14 +17,14 @@ function Inner() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const { data } = await api.get("/todos");
       setTodos(data);
     } catch { toast.error("Failed to load"); }
     finally { setLoading(false); }
-  };
-  useEffect(() => { load(); }, [todosRefreshKey]);
+  }, []);
+  useEffect(() => { load(); }, [load, todosRefreshKey]);
 
   const filtered = useMemo(() => {
     let list = todos;

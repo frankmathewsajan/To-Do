@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import AppLayout, { useAppCtx } from "../components/AppLayout";
 import { api } from "../lib/api";
@@ -23,11 +23,11 @@ function Inner() {
   const [cursor, setCursor] = useState(startOfMonth(new Date()));
   const [selected, setSelected] = useState(new Date());
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try { const { data } = await api.get("/todos"); setTodos(data); }
     catch { toast.error("Failed to load"); }
-  };
-  useEffect(() => { load(); }, [todosRefreshKey]);
+  }, []);
+  useEffect(() => { load(); }, [load, todosRefreshKey]);
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 0 });
