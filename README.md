@@ -1,60 +1,58 @@
-# VaultDo — Encrypted To-Do App
+# VaultDo - Encrypted To-Do App
 
-A modern, secure to-do application with a sleek Swiss-style dark/light UI, built for people who care about privacy and speed.
+A modern, secure, privacy-first to-do application with encrypted task data and MFA. This repository is refactored for immediate deployment to Railway.app.
 
-## Features
+## Railway Deployment (Recommended)
 
-- **Sidebar-nav dashboard** with 4 pages — Dashboard · Tasks · Calendar · You
-- **GitHub-style activity heatmap** + streak tracker on the dashboard
-- **⌘K command palette** for quick task creation and navigation
-- **Tasks**: priorities, categories, tags, due dates, search, filters
-- **Calendar** view with click-a-day to view or add tasks
-- **JWT authentication** (email+password) + **Google OAuth** (Emergent-managed)
-- **Email-based OTP MFA** (2FA) with lockout after 5 failed attempts
-- **AES-256-GCM encryption at rest** for task titles and descriptions
-- **Dark / Light theme** (Swiss high-contrast)
-- **Dockerized** — `docker compose up --build`
-- **Kubernetes** manifests — `kubectl apply -f k8s/all-in-one.yaml`
+Follow the step-by-step guide in [RAILWAY_DEPLOY.md](RAILWAY_DEPLOY.md).
 
-## Stack
+**Required environment variables**
 
-- **Frontend:** React 19 · Tailwind · shadcn/ui · Framer Motion · cmdk
-- **Backend:** FastAPI (Python 3.11) · bcrypt · PyJWT · cryptography (AES-GCM)
-- **Database:** MongoDB
-- **Redis** (available in Docker/K8s manifests for future caching/rate-limit layer)
+Backend:
+- `MONGO_URL`
+- `DB_NAME`
+- `JWT_SECRET`
+- `AES_KEY_B64`
+- `CORS_ORIGINS` (set to your Railway frontend URL)
 
-## Quick start
+Frontend:
+- `REACT_APP_BACKEND_URL` (set to your Railway backend URL)
 
-Full step-by-step instructions with commands for **VS Code**, **local dev**, **Docker Compose**, and **Kubernetes (minikube)** are in:
+## Local Development (Optional)
 
-## **→ [VSCODE_SETUP.md](./VSCODE_SETUP.md) ←**
-
-### TL;DR
-
+Backend:
 ```bash
-# 1. Run everything with Docker
-docker compose up --build
-# → frontend http://localhost:3000, backend http://localhost:8001
-
-# 2. Or run locally
-cd backend && python3.11 -m venv venv && source venv/bin/activate \
-  && pip install -r requirements.txt && uvicorn server:app --port 8001 --reload
-cd frontend && yarn install && yarn start
-
-# 3. Or deploy to Kubernetes
-minikube start
-eval $(minikube docker-env)
-docker build -t vaultdo-backend:latest ./backend
-docker build -t vaultdo-frontend:latest ./frontend
-kubectl apply -f k8s/all-in-one.yaml
-minikube tunnel
+cd backend
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-## Demo credentials
+Frontend:
+```bash
+cd frontend
+yarn install
+yarn dev
+```
 
-- Email: `demo@todoapp.com`
-- Password: `Demo@1234`
+Create `frontend/.env`:
+```env
+REACT_APP_BACKEND_URL=http://localhost:8001
+```
 
-## License
+## Frontend Production Server
 
-MIT
+The frontend build is served by a lightweight Express server at [frontend/server.js](frontend/server.js).
+
+```bash
+cd frontend
+yarn build
+yarn start
+```
+
+`yarn start` binds to `$PORT` so Railway can map it correctly.
+
+## Docs
+
+- Railway deploy steps: [RAILWAY_DEPLOY.md](RAILWAY_DEPLOY.md)

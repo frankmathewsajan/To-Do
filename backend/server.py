@@ -341,7 +341,7 @@ async def toggle_mfa(body: MFAEnableIn, user = Depends(get_current_user)):
 
 @api_router.post("/auth/google/session")
 async def google_session(body: GoogleSessionIn, response: Response):
-    """Exchange Emergent session_id for auth token."""
+    """Exchange OAuth session_id for auth token."""
     async with httpx.AsyncClient() as http:
         try:
             resp = await http.get(
@@ -462,12 +462,24 @@ async def todos_stats(user = Depends(get_current_user)):
     })
     return {"total": total, "completed": completed, "active": total - completed, "overdue": overdue}
 
+@app.get("/health")
+async def health():
+    """Health check endpoint for Docker/K8s"""
+    return {"status": "healthy", "service": "vaultdo-backend"}
+
 app.include_router(api_router)
+
+raw_origins = os.environ.get('CORS_ORIGINS', '*')
+origins = [o.strip() for o in raw_origins.split(',') if o.strip()]
+if origins == ['*']:
+    allow_origins = ["*"]
+else:
+    allow_origins = origins
 
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=allow_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
