@@ -10,6 +10,7 @@ import secrets
 import smtplib
 from email.message import EmailMessage
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Literal
 import uuid
@@ -25,6 +26,18 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # ----- Config -----
+def sanitize_mongo_url(url: str) -> str:
+    if "db_name=" not in url:
+        return url
+    parsed = urlparse(url)
+    params = [
+        (k, v)
+        for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+        if k.lower() != "db_name"
+    ]
+    new_query = urlencode(params)
+    return urlunparse(parsed._replace(query=new_query))
+
 def read_int_env(name: str, default: int) -> int:
     raw = os.environ.get(name)
     if raw is None or raw == "":
@@ -35,7 +48,7 @@ def read_int_env(name: str, default: int) -> int:
         logging.warning("Invalid %s=%r; using %s", name, raw, default)
         return default
 
-MONGO_URL = os.environ['MONGO_URL']
+MONGO_URL = sanitize_mongo_url(os.environ['MONGO_URL'])
 DB_NAME = os.environ['DB_NAME']
 JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALG = os.environ.get('JWT_ALGORITHM', 'HS256')
